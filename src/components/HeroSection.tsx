@@ -1,5 +1,6 @@
-import { ArrowDown, Sparkles, Code2, Lightbulb } from "lucide-react";
+import { ArrowDown, Sparkles, Code2, Lightbulb, Info, Target, Users, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 const HeroSection = () => {
   const scrollToForm = () => {
@@ -70,7 +71,7 @@ const HeroSection = () => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
+          <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto mb-16">
             <div className="text-center">
               <div className="text-3xl font-bold text-primary">3</div>
               <div className="text-sm text-muted-foreground">Concetti Chiave</div>
@@ -85,6 +86,51 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
+
+        {/* Educational explanation card */}
+        <Card className="max-w-4xl mx-auto border-2 border-dashed border-primary/30 bg-card/80 backdrop-blur">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-primary/10 shrink-0">
+                <Info className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-3 flex items-center gap-2">
+                  🎓 Cos'è una Landing Page?
+                </h3>
+                <p className="text-muted-foreground mb-4 leading-relaxed">
+                  Una <strong>landing page</strong> (pagina di atterraggio) è una pagina web progettata con un unico obiettivo: 
+                  <strong> convertire i visitatori in lead o clienti</strong>. A differenza di un sito web completo, 
+                  una landing page è focalizzata su una singola azione che vuoi che l'utente compia.
+                </p>
+                
+                <div className="grid sm:grid-cols-3 gap-4 mt-4">
+                  <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
+                    <Target className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <div className="font-semibold text-sm">Obiettivo Unico</div>
+                      <div className="text-xs text-muted-foreground">Una sola azione da compiere</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
+                    <Users className="w-5 h-5 text-secondary mt-0.5 shrink-0" />
+                    <div>
+                      <div className="font-semibold text-sm">Lead Generation</div>
+                      <div className="text-xs text-muted-foreground">Raccolta contatti interessati</div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
+                    <TrendingUp className="w-5 h-5 text-accent mt-0.5 shrink-0" />
+                    <div>
+                      <div className="font-semibold text-sm">Conversione</div>
+                      <div className="text-xs text-muted-foreground">Trasforma visitatori in clienti</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Scroll indicator */}
