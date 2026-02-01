@@ -3,38 +3,30 @@
 // in una sequenza di 64 caratteri esadecimali (256 bit)
 // È una funzione "one-way": non si può risalire al valore originale dall'hash
 
-export async function hashCode(code: string): Promise<string> {
-  // Convertiamo la stringa in un array di byte (Uint8Array)
-  // Questo è necessario perché l'API crypto lavora con dati binari
+async function sha256Hex(input: string): Promise<string> {
+  if (!globalThis.crypto?.subtle) {
+    throw new Error("Web Crypto API non disponibile in questo browser");
+  }
+
   const encoder = new TextEncoder();
-  const data = encoder.encode(code);
-  
-  // Usiamo la Web Crypto API del browser per calcolare l'hash SHA-256
-  // crypto.subtle è l'API per operazioni crittografiche
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  
-  // Convertiamo il buffer binario in una stringa esadecimale leggibile
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  return hashHex;
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Normalizza l'input utente prima dell'hash.
-// Serve a gestire casi comuni quando si incolla un codice:
-// - spazi iniziali/finali
-// - NBSP (spazio "speciale")
-// - caratteri invisibili (zero-width)
-// - differenze Unicode equivalenti (normalize)
-function normalizeAccessCode(input: string): string {
-  return input
+// Normalizzazione robusta per input incollati (desktop/mobile).
+// Obiettivo: far passare il codice anche quando l'utente incolla con caratteri “equivalenti”.
+export function sanitizeAccessCode(raw: string): string {
+  return raw
     .normalize("NFKC")
-    // Uniforma trattini "speciali" che alcuni device tastiere sostituiscono automaticamente
-    // (en-dash, em-dash, minus sign, ecc.)
+    // trattini tipografici / minus sign -> "-"
     .replace(/[\u2010-\u2015\u2212]/g, "-")
-    // Rimuove caratteri invisibili comuni (zero-width, BOM, NBSP)
+    // tilde tipografica -> "~"
+    .replace(/[\u02DC]/g, "~")
+    // rimuove invisibili + NBSP
     .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, "")
-    // Rimuove QUALSIASI whitespace (spazi, new line, tab) introdotta dal copia/incolla
+    // rimuove whitespace (spazi, new line, tab) introdotta dal copia/incolla
     .replace(/\s+/g, "")
     .trim();
 }
@@ -46,27 +38,32 @@ export const VALID_CODE_HASH = "f0e4c2f76c58916ec252921922247a9e612811770051202c
 
 // Funzione per verificare se il codice inserito è corretto
 export async function verifyCode(inputCode: string): Promise<boolean> {
-  const normalized = normalizeAccessCode(inputCode);
-  const inputHash = await hashCode(normalized);
-  // Confrontiamo gli hash, non i codici in chiaro
+  const normalized = sanitizeAccessCode(inputCode);
+  const inputHash = await sha256Hex(normalized);
   return inputHash === VALID_CODE_HASH;
 }
 
-// Gestione della sessione con localStorage
+// API “alta” per la UI
 const AUTH_KEY = "landing_builder_authenticated";
 
 export function isAuthenticated(): boolean {
   return localStorage.getItem(AUTH_KEY) === "true";
 }
 
-export function setAuthenticated(value: boolean): void {
-  if (value) {
+export async function loginWithCode(inputCode: string): Promise<{ ok: boolean; reason?: string }> {
+  try {
+    const ok = await verifyCode(inputCode);
+    if (!ok) return { ok: false, reason: "Codice di accesso non valido" };
     localStorage.setItem(AUTH_KEY, "true");
-  } else {
-    localStorage.removeItem(AUTH_KEY);
+    return { ok: true };
+  } catch (e) {
+    return {
+      ok: false,
+      reason: e instanceof Error ? e.message : "Errore durante la verifica",
+    };
   }
 }
 
 export function logout(): void {
-  setAuthenticated(false);
+  localStorage.removeItem(AUTH_KEY);
 }

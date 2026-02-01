@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Lock, Key, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { verifyCode } from "@/lib/auth";
+import { loginWithCode, sanitizeAccessCode } from "@/lib/auth";
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -15,10 +15,27 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showCode, setShowCode] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCode(e.target.value);
     setError("");
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    // Normalizziamo subito ciò che viene incollato per evitare caratteri invisibili.
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text");
+    const sanitized = sanitizeAccessCode(pasted);
+    setCode(sanitized);
+    setError("");
+    // manteniamo il focus e mettiamo il cursore in fondo
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,15 +43,11 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     setIsLoading(true);
     setError("");
 
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 250));
 
-    const isValid = await verifyCode(code);
-    
-    if (isValid) {
-      onLoginSuccess();
-    } else {
-      setError("Codice di accesso non valido. Riprova.");
-    }
+    const res = await loginWithCode(code);
+    if (res.ok) onLoginSuccess();
+    else setError(res.reason ?? "Codice di accesso non valido. Riprova.");
     
     setIsLoading(false);
   };
@@ -71,6 +84,8 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                   placeholder="Inserisci il codice di accesso..."
                   value={code}
                   onChange={handleCodeChange}
+                  onPaste={handlePaste}
+                  ref={inputRef}
                   className="pr-12 font-mono"
                   disabled={isLoading}
                 />
