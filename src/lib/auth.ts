@@ -29,7 +29,13 @@ export async function hashCode(code: string): Promise<string> {
 function normalizeAccessCode(input: string): string {
   return input
     .normalize("NFKC")
+    // Uniforma trattini "speciali" che alcuni device tastiere sostituiscono automaticamente
+    // (en-dash, em-dash, minus sign, ecc.)
+    .replace(/[\u2010-\u2015\u2212]/g, "-")
+    // Rimuove caratteri invisibili comuni (zero-width, BOM, NBSP)
     .replace(/[\u200B-\u200D\uFEFF\u00A0]/g, "")
+    // Rimuove QUALSIASI whitespace (spazi, new line, tab) introdotta dal copia/incolla
+    .replace(/\s+/g, "")
     .trim();
 }
 
