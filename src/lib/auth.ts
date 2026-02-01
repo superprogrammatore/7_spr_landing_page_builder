@@ -1,6 +1,6 @@
 // Hash SHA-256 del codice di accesso
 // Il codice originale NON è memorizzato nel codice sorgente
-const VALID_CODE_HASH = "f0e4c2f76c58916ec252921922247a9e612811770051202c422476917e7423a6";
+const VALID_CODE_HASH = "8e0094a56fe502cc605d51c5e62816ef427406578347c26c778868e4846adfa7";
 
 async function sha256(input: string): Promise<string> {
   const encoder = new TextEncoder();
