@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Lock, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import superProgrammatoreLogo from "@/assets/super-programmatore-logo.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,9 +34,11 @@ const LoginPage = ({ onSuccess }: LoginPageProps) => {
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-primary flex items-center justify-center">
-            <Lock className="w-8 h-8 text-primary-foreground" />
-          </div>
+          <img 
+            src={superProgrammatoreLogo} 
+            alt="Super Programmatore" 
+            className="w-64 h-auto mx-auto mb-6"
+          />
           <h1 className="text-3xl font-bold">Accesso Richiesto</h1>
           <p className="text-muted-foreground mt-2">
             Inserisci il codice per continuare
